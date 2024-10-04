@@ -16,15 +16,11 @@ app.use(express.json());
 
 app.post('/api/login', async (req, res) => {
   const { email, contraseña } = req.body;
-
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
-
-   
-      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      return res.json({ token });
-    
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return res.json({ token });
     //res.status(401).json({ message: 'Credenciales incorrectas' });
   } catch (err) {
     console.error(err);
