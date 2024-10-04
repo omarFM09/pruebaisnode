@@ -5,11 +5,11 @@ const jwt = require('jsonwebtoken');
 exports.register = async (req, res) => {
     const { nombre, email, password } = req.body;
 
-    //const hashedPassword = await bcrypt.hash(password, 10);
-    //const query = 'INSERT INTO public.users (nombre, email, password) VALUES ($1, $2, $3) RETURNING *';
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const query = 'INSERT INTO public.users (nombre, email, password) VALUES ($1, $2, $3) RETURNING *';
     
     try {
-        //const result = await req.pool.query(query, [nombre, email, hashedPassword]);
+        const result = await req.pool.query(query, [nombre, email, hashedPassword]);
         res.status(201).json({ message: 'Usuario registrado exitosamente' });
     } catch (error) {
         res.status(400).json({ message: 'Error al registrar usuario', error });
@@ -19,6 +19,7 @@ exports.register = async (req, res) => {
 // Inicio de sesión
 exports.login = async (req, res) => {
     const { email, password } = req.body;
+    res.status(201).json({ message: 'Usuario registrado exitosamente' });
 
     const query = 'SELECT * FROM public.users WHERE email = $1';
     const result = await req.pool.query(query, [email]);

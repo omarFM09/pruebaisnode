@@ -1,17 +1,5 @@
-version: '3'
+version: '3.8'
 services:
-  backend:
-    build:
-      context: ./backend
-    ports:
-      - "5000:5000"
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5433/postgres
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "8080:8080"
   db:
     image: postgres
     environment:
@@ -19,4 +7,26 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
-      - "5433:5433"
+      - "5434:5434"
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5434/postgres
+      JWT_SECRET: nodeisreact
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+  cors:
+    build:
+      context: ./backend
+    ports:
+      - "8080:8080"

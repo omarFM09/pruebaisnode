@@ -1,7 +1,11 @@
-import { createApp } from 'vue';
-import App from './App.vue';
-import router from './router';
+import Vue from 'vue'
+import App from './App.vue'
+import axios from 'axios'
 
-createApp(App)
-  .use(router)  // Asegúrate de que el router está correctamente utilizado
-  .mount('#app');
+Vue.prototype.$axios = axios
+
+axios.defaults.baseURL = 'http://localhost:8080/api'
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')

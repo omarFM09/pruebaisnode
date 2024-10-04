@@ -17,8 +17,10 @@
 </template>
 
 <script>
+
 import axios from 'axios';
 
+axios.defaults.baseURL = 'http://localhost:8080/api';
 export default {
   name: 'LoginForm', // Asegúrate de que sea un nombre de componente de múltiples palabras
   data() {
@@ -30,14 +32,15 @@ export default {
   methods: {
     async loginForm() {
       try {
-        const response = await axios.post('http://localhost:8080/api/login', {
+        const response = await axios.post('/login', {
           email: this.email,
           password: this.password,
         });
-        localStorage.setItem('token', response.data.token);
-        this.$router.push('/tasks'); // Redirigir a la lista de tareas
+        localStorage.setItem('token', response.data.message);
+        //localStorage.setItem('token', 'hola');
+        //this.$router.push('/tasks'); // Redirigir a la lista de tareas
       } catch (error) {
-        alert('Error al iniciar sesión. Verifica tus credenciales.');
+        alert(error);
       }
     },
   },

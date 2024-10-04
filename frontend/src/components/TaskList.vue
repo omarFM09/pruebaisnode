@@ -1,71 +1,58 @@
 <template>
-  <div class="task-list-container">
-    <h2>Lista de Tareas</h2>
-    <button @click="showAddTaskModal">Agregar Tarea</button>
-    <ul>
-      <li v-for="task in tasks" :key="task.id">
-        <h4>{{ task.titulo }}</h4>
-        <p>{{ task.descripcion }}</p>
-        <p>Fecha de vencimiento: {{ task.fechaVencimiento }}</p>
-        <p>Estado: {{ task.estado }}</p>
-        <button @click="deleteTask(task.id)">Eliminar</button>
-      </li>
-    </ul>
-    <add-task-modal v-if="isModalVisible" @close="isModalVisible = false" @task-added="fetchTasks" />
-  </div>
+    <div>
+        <h1>Lista de Tareas</h1>
+        <TaskForm
+            v-if="editingTask"
+            :task="editingTask"
+            @saved="fetchTasks"
+            @cancel="editingTask = null"
+        />
+        <TaskForm
+            v-else
+            @saved="fetchTasks"
+        />
+        <ul>
+            <li v-for="task in tasks" :key="task.id">
+                <h3>{{ task.titulo }}</h3>
+                <p>{{ task.descripcion }}</p>
+                <p>Estado: {{ task.estado }}</p>
+                <button @click="editTask(task)">Editar</button>
+                <button @click="deleteTask(task.id)">Eliminar</button>
+            </li>
+        </ul>
+    </div>
 </template>
 
 <script>
 import axios from 'axios';
-import AddTaskModal from './AddTaskModal.vue'; // Componente para agregar tareas
+import TaskForm from './TaskForm.vue';
 
 export default {
-  data() {
-    return {
-      tasks: [],
-      isModalVisible: false,
-    };
-  },
-  methods: {
-    async fetchTasks() {
-      try {
-        const response = await axios.get('http://localhost:5000/tasks', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        this.tasks = response.data;
-      } catch (error) {
-        alert('Error al obtener las tareas');
-      }
+    components: {
+        TaskForm
     },
-    async deleteTask(taskId) {
-      try {
-        await axios.delete(`http://localhost:5000/tasks/${taskId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        this.fetchTasks(); // Refrescar la lista
-      } catch (error) {
-        alert('Error al eliminar la tarea');
-      }
+    data() {
+        return {
+            tasks: [],
+            editingTask: null,
+            usuarioId: null // Asigna el ID del usuario que inicia sesión
+        };
     },
-    showAddTaskModal() {
-      this.isModalVisible = true;
+    methods: {
+        async fetchTasks() {
+            const response = await axios.get(`http://localhost:5000/api/tasks/${this.usuarioId}`);
+            this.tasks = response.data;
+        },
+        async deleteTask(id) {
+            await axios.delete(`http://localhost:5000/api/tasks/${id}`);
+            this.fetchTasks();
+        },
+        editTask(task) {
+            this.editingTask = { ...task };
+        }
     },
-  },
-  created() {
-    this.fetchTasks();
-  },
-  components: {
-    AddTaskModal,
-  },
+    mounted() {
+        this.fetchTasks();
+    }
 };
 </script>
-
-<style>
-.task-list-container {
-  max-width: 600px;
-  margin: auto;
-}
-button {
-  margin: 1rem 0;
-}
-</style>

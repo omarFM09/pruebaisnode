@@ -1,50 +1,43 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const { Pool } = require('pg');
 const cors = require('cors');
-const userController = require('./controllers/userController');
-//const authMiddleware = require('./middlewares/authMiddleware');
+
+const jwt = require('jsonwebtoken');
+const pool = require('./db');
+
+const corsAnywhere = require('cors-anywhere');
+
+require('dotenv').config();
 
 const app = express();
-const PORT = 8080;
+const PORT = 5000;
 
-// Middleware
-//app.use(bodyParser.json());
 app.use(cors());
-// Conexión a la base de datos
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'postgres',
-    password: 'postgres',
-    port: 5433,
+app.use(express.json());
+
+app.post('/api/login', async (req, res) => {
+  const { email, contraseña } = req.body;
+
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+
+   
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      return res.json({ token });
+    
+    //res.status(401).json({ message: 'Credenciales incorrectas' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error del servidor' });
+  }
 });
-
-
-// Añade la conexión al controlador
-app.use((req, res, next) => {
-    req.pool = pool;
-    next();
-});
-
-// 
-
-app.get('/api/prueba', (req, res) => {
-    console.log(`Servidor corriendo en http://localhost:asdasdsa`);
-    res.send("holaaa");
-});
-
-app.get('/api/nuevoo', () => {
-    console.log('Servidor escuchando en el puerto 8081 ajsasdasd');
-  });
-  
-
-app.post('/api/register', userController.register);
-app.post('/api/login', userController.login); // Asumiendo que tienes un método de login
-//app.get('/api/tasks', authMiddleware, taskController.getTasks); // Usa el middleware aquí
 
 app.listen(PORT, () => {
-    console.log(`Servidor corriendooooooooooooooooooooooooooooooooooooooo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-// Configura la conexión a PostgreSQL
+corsAnywhere.createServer({
+    originWhitelist: [], // Permitir todas las solicitudes
+  }).listen(8080, () => {
+    console.log('CORS Anywhere server running on port 8080');
+  });
